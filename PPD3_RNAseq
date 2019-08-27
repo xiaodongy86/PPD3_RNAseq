@@ -1,0 +1,12 @@
+## download from BGI server, first batch of PPD3_RNAseq data delivered on 7/30/2019, including sample
+##  WT1 WT2 WT3 sm1
+wget -r --user=20190730F19FTSUSAT0692 --password=20190730_ARAluwE ftp://20190730F19FTSUSAT0692:20190730_ARAluwE@cdts-hk.genomics.cn/F19FTSUSAT0692_ARAluwE
+
+
+ts wget -r --user=20190826F19FTSUSAT0692 --password=20190826_ARAyadE ftp://20190826F19FTSUSAT0692:20190826_ARAyadE@cdts-hk.genomics.cn/Clean/big1/
+ts wget -r --user=20190826F19FTSUSAT0692 --password=20190826_ARAyadE ftp://20190826F19FTSUSAT0692:20190826_ARAyadE@cdts-hk.genomics.cn/Clean/big2/
+ts wget -r --user=20190826F19FTSUSAT0692 --password=20190826_ARAyadE ftp://20190826F19FTSUSAT0692:20190826_ARAyadE@cdts-hk.genomics.cn/Clean/big3/
+ts wget -r --user=20190826F19FTSUSAT0692 --password=20190826_ARAyadE ftp://20190826F19FTSUSAT0692:20190826_ARAyadE@cdts-hk.genomics.cn/Clean/sm2/
+ts wget -r --user=20190826F19FTSUSAT0692 --password=20190826_ARAyadE ftp://20190826F19FTSUSAT0692:20190826_ARAyadE@cdts-hk.genomics.cn/Clean/sm3/
+
+
