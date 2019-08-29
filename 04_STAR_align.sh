@@ -2,7 +2,7 @@
 THREADS=10
 GENOME_INDEX_DIR=/data5/F19FTSUSAT0692_ARAluwE/cdts-hk.genomics.cn/Clean/STAR_INDEX
 FASTA_FILES=/data/genomes/TAIR10/TAIR10_chr_all.fa
-GTF_FILE=/data/genomes/TAIR10/Arabidopsis_thaliana.TAIR10.37.gtf
+GTF_FILE=/data/genomes/TAIR10/Arabidopsis_thaliana.TAIR10.38.gtf
 #FASTA_FILES=/data5/F15FTSUSAT0747_TOMrcwM/YXD_Bismark_pipeline/ftp.solgenomics.net/genomes/Solanum_lycopersicum/assembly/build_3.00/S_lycopersicum_chromosomes.3.00.fa
 #GTF_FILE=/data/users/xzy50/ITAG3.0_gene_models.gff
 
