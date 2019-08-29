@@ -1,5 +1,5 @@
 #!/bin/bash
-GTF_FILE=/data/genomes/TAIR10/Arabidopsis_thaliana.TAIR10.37.gtf
+GTF_FILE=/data/genomes/TAIR10/Arabidopsis_thaliana.TAIR10.38.gtf
 OUT_DIR=/data5/F19FTSUSAT0692_ARAluwE/cdts-hk.genomics.cn/Clean/QoRTs_out
 BASE_DIR=/data5/F19FTSUSAT0692_ARAluwE/cdts-hk.genomics.cn/Clean/CleanSTAR_align_out
 
