@@ -1,3 +1,4 @@
+##  This is PPD3 RNAi line RNAseq 
 ## download from BGI server, first batch of PPD3_RNAseq data delivered on 7/30/2019, including sample
 ##  WT1 WT2 WT3 sm1
 wget -r --user=20190730F19FTSUSAT0692 --password=20190730_ARAluwE ftp://20190730F19FTSUSAT0692:20190730_ARAluwE@cdts-hk.genomics.cn/F19FTSUSAT0692_ARAluwE
