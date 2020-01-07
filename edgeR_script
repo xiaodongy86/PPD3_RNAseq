@@ -1,0 +1,294 @@
+#============================================================================= #
+
+#
+
+# ================= Gene Expression Transgenerational Memory ================= #
+
+#
+
+#============================================================================= #
+
+ 
+
+library(data.table)
+
+library( rtracklayer )
+
+library( DESeq2 )
+
+library( edgeR )
+
+ 
+
+setwd("/data/Work/Memory/")
+
+ 
+
+# ============================================================================= #
+
+#
+
+# ================================= Memory data ===============================
+
+#
+
+# ============================================================================= #
+
+ 
+
+# GENES <- import("/data/Work/Memory/Arabidopsis_thaliana.TAIR10.43.gff3.gz")
+
+# GENES <- import("/data/Work/TAIR10_gff3/Arabidopsis_thaliana.TAIR10.37.gff3.gz")
+
+GENES <- import("/data/Work/TAIR10_gff3/Arabidopsis_thaliana.TAIR10.37.gtf")
+
+seqlevels(GENES, pruning.mode = "coarse") <- paste(1:5)
+
+GENES <- GENES[, c("type", "gene_biotype", "gene_id" ,"gene_name")]
+
+GENES <- GENES[ which(GENES$type == "gene") ]
+
+# GENES <- GENES[ which(GENES$biotype == "protein_coding") ]
+
+ 
+
+ 
+
+# ============================ Expressed genes =============================== #
+
+ 
+
+sampleFiles <- list.files(path = "./DEG", pattern = ".QC.geneCounts.formatted.for.DESeq.txt.gz" )
+
+sampleName <- sub( ".QC.geneCounts.formatted.for.DESeq.txt.gz" ,"", sampleFiles )
+
+sampleName <- gsub("[-]", "_", sampleName)
+
+ 
+
+ 
+
+sampleCondition <- factor( c( "MM1", "MM1", "MM1",
+
+                              "MM5", "MM5", "MM5",
+
+                              "NM", "NM", "NM",
+
+                              "WT1", "WT1","WT1",
+
+                              "WT5", "WT5", "WT5"),
+
+                           levels = c("MM1", "MM5", "NM", "WT1", "WT5") )
+
+ 
+
+sampleTable <- data.frame( sampleName = sampleName,
+
+                           fileName = sampleFiles,
+
+                           condition = sampleCondition )
+
+ 
+
+ 
+
+#    sampleName                                         fileName condition
+
+# 1     M_1_105 M-1-105.QC.geneCounts.formatted.for.DESeq.txt.gz       MM1
+
+# 2      M_1_27  M-1-27.QC.geneCounts.formatted.for.DESeq.txt.gz       MM1
+
+# 3       M_1_3   M-1-3.QC.geneCounts.formatted.for.DESeq.txt.gz       MM1
+
+# 4       M_5_1   M-5-1.QC.geneCounts.formatted.for.DESeq.txt.gz       MM5
+
+# 5       M_5_2   M-5-2.QC.geneCounts.formatted.for.DESeq.txt.gz       MM5
+
+# 6       M_5_3   M-5-3.QC.geneCounts.formatted.for.DESeq.txt.gz       MM5
+
+# 7     NM_1_12 NM-1-12.QC.geneCounts.formatted.for.DESeq.txt.gz        NM
+
+# 8     NM_1_45 NM-1-45.QC.geneCounts.formatted.for.DESeq.txt.gz        NM
+
+# 9     NM_1_70 NM-1-70.QC.geneCounts.formatted.for.DESeq.txt.gz        NM
+
+# 10      W_1_1   W-1-1.QC.geneCounts.formatted.for.DESeq.txt.gz       WT1
+
+# 11      W_1_3   W-1-3.QC.geneCounts.formatted.for.DESeq.txt.gz       WT1
+
+# 12      W_1_4   W-1-4.QC.geneCounts.formatted.for.DESeq.txt.gz       WT1
+
+# 13      W_5_1   W-5-1.QC.geneCounts.formatted.for.DESeq.txt.gz       WT5
+
+# 14      W_5_2   W-5-2.QC.geneCounts.formatted.for.DESeq.txt.gz       WT5
+
+# 15      W_5_3   W-5-3.QC.geneCounts.formatted.for.DESeq.txt.gz       WT5
+
+ 
+
+expr_data <- DESeqDataSetFromHTSeqCount(sampleTable = sampleTable,
+
+                                        directory = "./DEG",
+
+                                        design= ~ condition)
+
+ 
+
+idx <- match(rownames(expr_data), GENES$gene_id)
+
+sum(is.na(idx)) # 322
+
+# idx1 <- which(is.na(idx))
+
+# rownames(expr_data)[idx1]
+
+ 
+
+idx <- match(GENES$gene_id, rownames(expr_data))
+
+# sum(is.na(idx))
+
+expr_data <- expr_data[idx]
+
+ 
+
+idx <- match(rownames(expr_data), GENES$gene_id)
+
+# sum(is.na(idx)) # 0
+
+GENES <- GENES[idx]
+
+genes <- data.frame(GENES)[, -4]
+
+ 
+
+head(counts(expr_data))
+
+#           M_1_105 M_1_27 M_1_3 M_5_1 M_5_2 M_5_3 NM_1_12 NM_1_45 NM_1_70 W_1_1 W_1_3 W_1_4 W_5_1 W_5_2 W_5_3
+
+# AT1G01010     602    498   398   513   463   548     706     704     710   796   739   710   786   930   694
+
+# AT1G01020     408    571   460   379   404   478     714     637     652   779   688   700   668   661   602
+
+# AT1G03987       0      0     0     0     0     0       0       0       0     0     0     0     0     0     0
+
+# AT1G01030      18     18    43    24    20    33      33      12      39    41    28    24    16    26    16
+
+# AT1G01040    4703   4034  3852  3969  2785  4172    3454    3805    3572  4022  3939  4173  3826  3853  4027
+
+# AT1G03993       1      1     0     1     0     0       0       4       3     5     0     1     1     1     0
+
+ 
+
+exp_count <- DGEList(counts = counts(expr_data), group = sampleCondition,
+
+                     genes = data.frame(genes = genes,
+
+                                        length = width(GENES)))
+
+ 
+
+keep <- filterByExpr(exp_count)
+
+exp_count <- exp_count[keep, ]
+
+ 
+
+# Counts per Million
+
+exp_cpm <- cpm(exp_count)
+
+# head(exp_cpm)
+
+#               M_1_105     M_1_27      M_1_3       M_5_1      M_5_2       M_5_3     NM_1_12     NM_1_45    NM_1_70      W_1_1      W_1_3      W_1_4      W_5_1
+
+# AT1G01010  7.64704075  6.37976684  5.04334399  6.54350206  5.87161768  6.98679311  9.07413304  9.03934676  9.0413408 10.3148911  9.5407445  9.0705124 10.1714201
+
+# AT1G01020  5.18271200  7.31495355  5.82899055  4.83428320  5.12339858  6.09431954  9.17695608  8.17906802  8.3027524 10.0945982  8.8823169  8.9427587  8.6444130
+
+# AT1G01030  0.22864906  0.23059398  0.54488390  0.30612875  0.25363359  0.42073754  0.42414503  0.15407977  0.4966370  0.5312946  0.3614896  0.3066089  0.2070518
+
+# AT1G01040 59.74091801 51.67867359 48.81145996 50.62604222 35.31847781 53.19142494 44.39384637 48.85612845 45.4868581 52.1187084 50.8538463 53.3116172 49.5112639
+
+# AT1G01046  0.02540545  0.05124311  0.08870203  0.05102146  0.02536336  0.08924736  0.07711728  0.01283998  0.2037485  0.2462097  0.1420138  0.1277537  0.1552889
+
+# AT1G01050 49.95981937 51.99894301 52.62564725 53.21538125 52.56556213 55.70310056 66.39797636 64.84190504 65.4160107 75.0939620 76.1064798 69.8557209 67.2918380
+
+#               W_5_2      W_5_3
+
+# AT1G01010 11.7420056  8.8491460
+
+# AT1G01020  8.3456620  7.6760604
+
+# AT1G01030  0.3282711  0.2040149
+
+# AT1G01040 48.6472553 51.3479984
+
+# AT1G01046  0.1010065  0.1020074
+
+# AT1G01050 69.3157103 70.1428705
+
+ 
+
+# Reads per Kilobase per Million (RPKM)
+
+exp_rpkm <- rpkm(exp_count)
+
+ 
+
+# head(exp_rpkm)
+
+#             M_1_105     M_1_27     M_1_3      M_5_1     M_5_2     M_5_3   NM_1_12    NM_1_45    NM_1_70      W_1_1     W_1_3      W_1_4      W_5_1      W_5_2
+
+# AT1G01010  3.3702251  2.8117086  2.2227166  2.8838705  2.5877557  3.0792389  3.9991772  3.98384608  3.9847249  4.546008  4.2048235  3.9975815  4.4827766  5.1749694
+
+# AT1G01020  2.2119983  3.1220459  2.4878321  2.0632877  2.1866831  2.6010753  3.9167546  3.49085276  3.5436416  4.308407  3.7910017  3.8167984  3.6894635  3.5619556
+
+# AT1G01030  0.1106723  0.1116137  0.2637386  0.1481746  0.1227655  0.2036484  0.2052977  0.07457879  0.2403858  0.257161  0.1749708  0.1484070  0.1002187  0.1588921
+
+# AT1G01040  7.3690537  6.3745743  6.0209029  6.2447320  4.3565410  6.5611724  5.4759894  6.02641278  5.6108126  6.428853  6.2728317  6.5759982  6.1072239  6.0006482
+
+# AT1G01046  0.1227316  0.2475512  0.4285122  0.2464805  0.1225283  0.4311467  0.3725472  0.06202889  0.9842924  1.189419  0.6860569  0.6171676  0.7501877  0.4879541
+
+# AT1G01050 24.9549547 25.9734980 26.2865371 26.5811095 26.2565245 27.8237266 33.1658224 32.38856395 32.6753300 37.509472 38.0152247 34.8929675 33.6123067 34.6232319
+
+#                W_5_3
+
+# AT1G01010  3.90002027
+
+# AT1G01020  3.27616746
+
+# AT1G01030  0.09874874
+
+# AT1G01040  6.33378543
+
+# AT1G01046  0.49278960
+
+# AT1G01050 35.03639884
+
+ 
+
+ 
+
+# exp_g1 <- exp_count[, c("W_1_1", "W_1_3", "W_1_4", "M_1_105", "M_1_27", "M_1_3")]
+
+exp_count <- estimateDisp(exp_count)
+
+ 
+
+# ----------------------------- M1 vs WT1 -------------------------------------
+
+deg_mm1_wt1 <- exactTest(exp_count, pair =c("WT1", "MM1"))
+
+ 
+
+deg_mm1_wt1$table$adj.pval <- p.adjust(deg_mm1_wt1$table$PValue, method = "BH")
+
+ 
+
+idx <- which((abs(deg_mm1_wt1$table$logFC) >= 0.5) & deg_mm1_wt1$table$adj.pval < 0.05)
+
+deg_mm1_wt1[idx,] # 5244
+
+ 
+
